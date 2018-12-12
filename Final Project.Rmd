@@ -556,14 +556,17 @@ summary(pca)
 
 eigvals <- pca$sdev^2
 k <- length(eigvals)
-plot(1:k,eigvals,type="b",xlab="i",ylab=expression(lambda[i]))
+plot(1:k,eigvals,type="b",xlab="Principal Components",ylab=expression(lambda[i]), main = "Scree Plot")
 ```
 **Figuer 19**
 ```{r pc1 pc2}
 # PC1 vs PC2 with food category colored
+
+colors <- c("blue","purple","brown","black","red","darkgreen")
+
 PC1scores <- pca$scores[,1]
 PC2scores <- pca$scores[,2]
-plot(PC1scores,PC2scores,  type = 'n')
+plot(PC1scores,PC2scores,  type = 'n', main = 'PCA',xlab = "PC1 (36% of variance)",ylab = 'PC2 (21% of variance)')
 gp <- data$group == "vegetable"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- data$group == "fruit"
@@ -576,13 +579,17 @@ gp <- data$group == "dairy"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
+legend("topleft", legend=levels(data$group), pch=16, col=colors)
+
 ```
 **Figure 20**
 ```{r pc1 pc3}
 # PC1 vs PC3 with food category colored
+colors <- c("blue","purple","brown","black","red","darkgreen")
+
 PC1scores <- pca$scores[,1]
 PC3scores <- pca$scores[,3]
-plot(PC1scores,PC3scores)
+plot(PC1scores,PC3scores,type = 'n', main = "PCA", xlab = "PC1 (36% of variance)", ylab = 'PC3 (9% of variance)')
 gp <- data$group == "vegetable"
 text(PC1scores[gp],PC3scores[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- data$group == "fruit"
@@ -595,13 +602,17 @@ gp <- data$group == "dairy"
 text(PC1scores[gp],PC3scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC1scores[gp],PC3scores[gp],labels=data$food.item[gp],col="black")
+legend("topleft", legend=levels(data$group), pch=16, col=colors)
+
 ```
 **Figure 21**
 ```{r pc2 pc3}
 # PC2 vs PC3 with food category colored
+colors <- c("blue","purple","brown","black","red","darkgreen")
+
 PC2scores <- pca$scores[,2]
 PC3scores <- pca$scores[,3]
-plot(PC2scores,PC3scores)
+plot(PC2scores,PC3scores, type = 'n', main = 'PCA',xlab = "PC2 (21% of variance)", ylab = "PC3 (9% of varinace)")
 gp <- data$group == "vegetable"
 text(PC2scores[gp],PC3scores[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- data$group == "fruit"
@@ -614,6 +625,7 @@ gp <- data$group == "dairy"
 text(PC2scores[gp],PC3scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC2scores[gp],PC3scores[gp],labels=data$food.item[gp],col="black")
+legend("topright", legend=levels(data$group), pch=16, col=colors)
 
 ```
 
