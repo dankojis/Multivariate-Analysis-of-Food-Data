@@ -3,8 +3,9 @@ title: "Final Report"
 author: "Daniel Kojis"
 date: "December 9, 2018"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
+  fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -33,7 +34,7 @@ Because of nutrition's universal importance, it's probably a good idea that we u
 
 ```{r data import and preprocess}
 # read data in and format
-setwd("~/Stat 456/Final Project")
+#setwd("~/Stat 456/Final Project")
 data <- read.csv("FoodData.csv")
 data <- data[,-1] 
 data[, 3:length(colnames(data))] <- sapply(data[, 3:length(colnames(data))], as.numeric) # set columns to numeric
@@ -85,20 +86,50 @@ The results below are what appeared interesting and worthy of discussion. Other 
 To begin, let's examine our variables individually. To assess whether or not any of the quantitative variables follow a normal distribution, a corresponding qq plot was plotted for each variable.
 
 
-```{r }
+
+**Figure 1:** Normal qq plots for all quantitative variables.
+```{r qqplot}
 # tests for normality
-par(mfrow=c(3,5))
-for(variable in colnames(data.vals)){
-  qqnorm(data[,variable],main = variable)
+names <- c("Weight", "Total Fat", "Saturated Fat", "Cholesterol", "Sodium", "Sugar",
+           "Fiber", "Total Carbs","Protein","Vitamini A", "Vitamin C", "Calcium","Iron")
+i = 1
+par(mfrow=c(2,3))
+for(variable in colnames(data.vals[1:6])){
+  
+  qqnorm(data[,variable],main = names[i])
   qqline(data[,variable])
   #print(shapiro.test(data[,variable]))
+  
+  i = i +1
 }
+par(mfrow=c(2,3))
+for(variable in colnames(data.vals[7:12])){
+  
+  qqnorm(data[,variable],main = names[i])
+  qqline(data[,variable])
+  #print(shapiro.test(data[,variable]))
+  
+  i = i +1
+}
+par(mfrow=c(2,3))
+for(variable in colnames(data.vals[13])){
+  
+  qqnorm(data[,variable],main = names[i])
+  qqline(data[,variable])
+  #print(shapiro.test(data[,variable]))
+  
+  i = i +1
+}
+
 ```
 
 The plots clearly indicated that none of the variables follow a normal distribution. This is further validated by the Shapiro-Wilk Test conducted on all 13 variables, resulting in all p-values below the 0.001 threshold and rejecting the null hypothesis that they come from a normal distribution. The qq plots also indicate a heavy tail in many of the variables.
 
-To inspect this further, let's plot the density distributions of these variables. The variables were scaled by subtracting the column and mean and dividing by the column standard deviation for each value (i.e. standardization) so they could be more easily compared (with the exception of vitamin A). The density distribution of each variable is represented on one of the following four graphs.
+To inspect this further, let's plot the density distributions of these variables. **The variables were scaled by subtracting the column and mean and dividing by the column standard deviation for each value (i.e. standardization) so they could be more easily compared (with the exception of vitamin A). The density distribution of each variable is represented on one of the following four graphs.**
 
+
+
+**Figure 2:** Density graphs for all quantitative variables. All variables are standardized with the exception of Vitamin A
 ```{r message=FALSE}
 
 x <- data.frame(Weight=data.scale$weight, Total.Fat=data.scale$total.fat,Saturated.Fat=data.scale$saturated.fat,
@@ -115,19 +146,21 @@ x4 <- data.frame(Vitamin.A=data$vitamin.a)
 d <- melt(x)
 d2 <- melt(x2)
 par(mfrow = c(1,1))
-g1 <- ggplot(d,aes(x=value, fill=variable)) + geom_density(alpha=0.25)
-g2 <- ggplot(d2,aes(x=value, fill=variable)) + geom_density(alpha=0.25)
+g1 <- ggplot(d,aes(x=value, fill=variable)) + geom_density(alpha=0.25) + xlab("Standardized Value") +
+  ylab("Density") + ggtitle("Density Plots")
+g2 <- ggplot(d2,aes(x=value, fill=variable)) + geom_density(alpha=0.25)+ xlab("Standardized Value") +
+  ylab("Density") 
 
 d3 <- melt(x3)
 d4 <- melt(x4)
-g3 <- ggplot(d3,aes(x=value, fill=variable)) + geom_density(alpha=0.25)
-g4 <- ggplot(d4,aes(x=value,fill=variable))+geom_density(alpha=0.25)
+g3 <- ggplot(d3,aes(x=value, fill=variable)) + geom_density(alpha=0.25)+ xlab("Standardized Value") +
+  ylab("Density") 
+g4 <- ggplot(d4,aes(x=value,fill=variable))+geom_density(alpha=0.25)+ xlab("Vitamin A (DV%)") +
+  ylab("Density") 
 
 ggarrange(g1, g2, 
-          labels = c("A", "B"),
           ncol = 1, nrow = 2)
 ggarrange(g3, g4, 
-          labels = c("c", "d"),
           ncol = 1, nrow = 2)
 ```
 
@@ -141,6 +174,9 @@ These distributions indicate that outliers are present in the data, so the analy
 
 Next, let's examine the relationship among the variables through a correlation matrix. Because the sample size is relatively small, I calculated correlation confidence intervals and p-values to help determine whether or not a relationship was statistically significant. To account for the non-normality of the data, I used bootstrap sample with 1000 replications for these calculations. All variables discussed as having a meaningful relationship had correlation values that were significant at the 1% level. The following plot depicts the information from the correlation matrix rounded to the first decimal. 
 
+
+
+**Figure 3:** correlelogram of variables rounded to first decimal place. 
 ```{r correlelogram}
 corr <- round(cor(data[,c(3:dim(data)[2])]), 1) # select rows with continuous variables (e.g. cor(data[c(3,5,8,9)]) )
 ggcorrplot(corr, hc.order = TRUE, 
@@ -153,107 +189,111 @@ ggcorrplot(corr, hc.order = TRUE,
            ggtheme=theme_bw) 
 ```
 
-A few observations:
+There a few observations I want to point out. 
 
-The highest correlation was between total fat and saturated fat (p=0.79). This shouldn't surprise us, as total fat is composed of saturated and unsaturated fat. However, this point might be used to counter the argument of "not all fat is bad" that you sometimes hear people say.  While this point has merit (unsaturated fats are indeed good for you), it seems like total fat is a good indicator of the level of unhealthy fat. Generally speaking, fat is bad. "Not all fat is bad" likely only applies to unique foods that were excluded from this analysis. 
+The highest correlation was 0.79 between total fat and saturated fat. This shouldn't surprise us, as total fat is composed of saturated and unsaturated fat. However, this point might be used to counter the argument of "not all fat is bad" that you sometimes hear people say.  While this point has merit (unsaturated fats are indeed good for you), it seems like total fat is a good indicator of the level of unhealthy fat. Generally speaking, fat is bad. "Not all fat is bad" likely only applies to unique foods that were excluded from this analysis. 
 
-Sugar and fiber, being types of carbs, have decently strong correlation with total carbs (p=0.70, p=0.58, respectively). Protein, being the third macronutrient after fat and carbs, has strong negative correlation with total carbs (p= -0.76). These observations made so far shouldn't be surprising and won't be the focus of the analysis despite some of the largest correlation values. However, it's important to note this relationship with those unfamiliar with macronutrient composition of foods. One could also takeaway to try and eat higher protein foods if they are trying to limit their sugar intake (correlation of sugar and protein is -0.57). 
+Sugar and fiber, being types of carbs, have decently strong correlation with total carbs (&rho;=0.70, &rho;=0.58, respectively). Protein, being the third macronutrient after fat and carbs, has strong negative correlation with total carbs (&rho;= -0.76). These observations made so far shouldn't be surprising and won't be the focus of the analysis despite some of the largest correlation values. However, it's important to note this relationship with those unfamiliar with macronutrient composition of foods. One could also takeaway to try and eat higher protein foods if they are trying to limit their sugar intake (correlation of sugar and protein is -0.57). 
 
+
+
+**Figure 4:** scatterplots of previously discussed variables. 
 ```{r scatterplots}
 
 g1 <- ggplot(data, aes(x=total.fat, y=saturated.fat)) +
   geom_point(col='black', size=1)+
   geom_smooth(method="glm", se=TRUE) + # se=FALSE to turnoff confidence bands 
-  labs(y="Saturated Fat", x="Total Fat")
+  labs(y="Saturated Fat (g)", x="Total Fat (g)")
 
 g2 <- ggplot(data, aes(x=sugar, y=total.carbs)) +
   geom_point(col='black', size=1)+
   geom_smooth(method="glm", se=TRUE)+  # se=FALSE to turnoff confidence bands 
-  labs(y="Total Carbs", x="Sugar")
+  labs(y="Total Carbs (g)", x="Sugar (g)")
 
 g3 <- ggplot(data, aes(x=fiber, y=total.carbs)) +
   geom_point(col='black', size=1)+
   geom_smooth(method="glm", se=TRUE)+  # se=FALSE to turnoff confidence bands 
-  labs(y="Total Carbs", x="Fiber")
+  labs(y="Total Carbs (g)", x="Fiber (g)")
 
 g4 <- ggplot(data, aes(x=protein, y=total.carbs)) +
   geom_point(col='black', size=1)+
   geom_smooth(method="glm", se=TRUE)+  # se=FALSE to turnoff confidence bands 
-  labs(y="Total Carbs", x="Protein")
+  labs(y="Total Carbs (g)", x="Protein (g)")
 
 g5 <- ggplot(data, aes(x=sugar, y=protein)) +
   geom_point(col='black', size=1)+
   geom_smooth(method="glm", se=TRUE)+  # se=FALSE to turnoff confidence bands 
-  labs(y="Protein", x="Sugar")
+  labs(y="Protein (g)", x="Sugar (g)")
 
 figure <- ggarrange(g1, g2, g3,g4,g5,
-          ncol = 2, nrow = 3)
+          ncol = 3, nrow = 2)
 
 annotate_figure(figure,
-                top = text_grob("", color = "Black", face = "bold", size = 10),
+                top = text_grob("", color = "Black", face = "bold", size = 10)
                 #bottom = text_grob("Data source: \n mtcars data set", color = "blue",
                     #               hjust = 1, x = 1, face = "italic", size = 10),
                 #left = text_grob("Figure arranged using ggpubr", color = "green", rot = 90),
                # right = "I'm done, thanks :-)!",
-                fig.lab = "Figure 1", fig.lab.face = "bold"
                 )
 ```
 
 Let's look at our vitamin & minerals (i.e. vitamin A, vitamin C , iron, and calcium). From the correlation matrix, there appears to be no relationship between vitamins & minerals and the macronutrient composition (i.e. Total carbs, total fat, protein) of the food.  The 12 corresponding variables correlation values fell between -0.3 and 0.3, and none of these values were significant at the 5% level.  A canonical correlation analysis between the three macronutrient variables and four vitamin & mineral variables confirmed this observation of no relationship. This is an interesting observation, and rules out further analysis for the hypotheses that macronutrient composition is related to vitamin & mineral composition.  
 
+
+
+**Figure 6:** scatterplots of previously discussed variables. 
 ```{r scatterplots v&m and macro}
 
 g1 <- ggplot(data, aes(x=vitamin.a, y=total.carbs)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Carbs (g)", x="Vitamin A (%)")
+  labs(y="Total Carbs (g)", x="Vitamin A (DV%)")
 g2 <- ggplot(data, aes(x=vitamin.a, y=total.fat)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Fat (g)", x="Vitamin A (%)")
+  labs(y="Total Fat (g)", x="Vitamin A (DV%)")
 g3 <- ggplot(data, aes(x=vitamin.a, y=protein)) +
   geom_point(col='black', size=1)+
-  labs(y="Protein (g)", x="Vitamin A (%)")
+  labs(y="Protein (g)", x="Vitamin A (DV%)")
 
 g4 <- ggplot(data, aes(x=vitamin.c, y=total.carbs)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Carbs (g)", x="Vitamin C (%)")
+  labs(y="Total Carbs (g)", x="Vitamin C (DV%)")
 g5 <- ggplot(data, aes(x=vitamin.c, y=total.fat)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Fat (g)", x="Vitamin C (%)")
+  labs(y="Total Fat (g)", x="Vitamin C (DV%)")
 g6 <- ggplot(data, aes(x=vitamin.a, y=protein)) +
   geom_point(col='black', size=1)+
-  labs(y="Protein (g)", x="Vitamin C (%)")
+  labs(y="Protein (g)", x="Vitamin C (DV%)")
 
 g7 <- ggplot(data, aes(x=iron, y=total.carbs)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Carbs (g)", x="Iron (%)")
+  labs(y="Total Carbs (g)", x="Iron (DV%)")
 g8 <- ggplot(data, aes(x=iron, y=total.fat)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Fat (g)", x="Iron (%)")
+  labs(y="Total Fat (g)", x="Iron (DV%)")
 g9 <- ggplot(data, aes(x=iron, y=protein)) +
   geom_point(col='black', size=1)+
-  labs(y="Protein (g)", x="Iron (%)")
+  labs(y="Protein (g)", x="Iron (DV%)")
 
 g10 <- ggplot(data, aes(x=calcium, y=total.carbs)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Carbs (g)", x="Calcium (%)")
+  labs(y="Total Carbs (g)", x="Calcium (DV%)")
 g11 <- ggplot(data, aes(x=calcium, y=total.fat)) +
   geom_point(col='black', size=1)+
-  labs(y="Total Fat (g)", x="Calcium (%)")
+  labs(y="Total Fat (g)", x="Calcium (DV%)")
 g12 <- ggplot(data, aes(x=calcium, y=protein)) +
   geom_point(col='black', size=1)+
-  labs(y="Protein (g)", x="Calcium (%)")
+  labs(y="Protein (g)", x="Calcium (DV%)")
 
 
 figure <- ggarrange(g1, g2, g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,
           ncol = 3, nrow = 4)
 
 annotate_figure(figure,
-                top = text_grob("", color = "Black", face = "bold", size = 10),
+                top = text_grob("", color = "Black", face = "bold", size = 10)
                 #bottom = text_grob("Data source: \n mtcars data set", color = "blue",
                     #               hjust = 1, x = 1, face = "italic", size = 10),
                 #left = text_grob("Figure arranged using ggpubr", color = "green", rot = 90),
                # right = "I'm done, thanks :-)!",
-                fig.lab = "Figure 1", fig.lab.face = "bold"
                 )
 ```
 
@@ -261,31 +301,43 @@ Sodium stands alone as the sole variable with no meaningful relationships with a
 
 With the exception of Vitamin C, there seems to be a decently strong association between the other 3 vitamins & minerals. Upon examining the bivariate boxplots (robust method used) of these variables, however, there is an interesting observation. These plots typically show little relationship with the exception of a few key outliers. After removing these outliers, the correlation coefficients are considerably lower. A bivariate boxplot of vitamin A versus iron indicates spinach and carrots as two potential outliers. After removing them, the correlation coefficient decreased from 0.62 to 0.18. 
 
+
+
+**Figure 7:** Nonrobust bivariate boxplot of vitamin A vs Iron
 ```{r bivariate}
 
 # vitamin A vs Iron
 x <- data.vals[,c("vitamin.a","iron")]
-bvbox(x,method="nonrobust")
+bvbox(x,method="nonrobust",xlab="Vitamin A (DV%)", ylab="Iron (DV%)", type="n")
 text(x[c(20,36),"vitamin.a"],x[c(20,36),"iron"],labels=data$food.item[c(20,36)],col="black")
+points(x = x[-c(20,36),'vitamin.a'], y= x[-c(20,36),'iron'])
 
 ```
 
 The scatterplot of vitamin A versus calcium indicates that spinach, carrots, milk, yogurt, cheese, and celery are all potential outliers. Removing them decreased the correlation coefficient from 0.48 to 0.21. 
 
+
+
+**Figure 8:** scatterplot of vitamin A vs calcium. 
 ```{r bivariate calcium vitamin A}
 
 x <- data.vals[,c("vitamin.a","calcium")]
-plot(x)
+plot(x, xlab="Vitamin A (DV%)", ylab="Calcium (DV%)", type="n")
 text(x[c(31,10,19,7,20,36),'vitamin.a'],x[c(31,10,19,7,20,36),"calcium"],labels=data$food.item[c(31,10,19,7,20,36)],cex=1)
+points(x = x[-c(31,10,19,7,20,36),'vitamin.a'], y= x[-c(31,10,19,7,20,36),'calcium'])
 ```
 
 The bivariate boxplot of iron vs calcium indicate spinach, celery, milk, cheese, yogurt, and peas as potential outliers. Removing them decreased the correlation coefficient from 0.53 to 0.39. 
 
+
+
+**Figure 9:** robust bivariate boxplot of iron vs calcium
 ```{r iron v calcium}
 
 x <- data.vals[,c("iron","calcium")]
-bvbox(x,method="robust")
+bvbox(x,method="robust", xlab="Iron (DV%)", ylab = "Calcium (DV%)", type="n")
 text(x[c(31,10,19,7,32,36),"iron"],x[c(31,10,19,7,32,36),"calcium"],labels=data$food.item[c(31,10,19,7,32,36)],cex=1)
+points(x = x[-c(31,10,19,7,32,36),'iron'], y= x[-c(31,10,19,7,32,36),'calcium'])
 
 
 ```
@@ -293,10 +345,15 @@ These observation shouldn't lead us to the conclusion that these variables aren'
 
 When the outliers are removed for vitamin C and weight, there is an opposite effect. The correlation becomes much stronger, increasing from 0.46 to 0.83. Ignoring the foods with quite high values, there is a very strong association at the bottom end for foods with small values of vitamin c and weight. 
 
+
+
+**Figure 10:** robust bivariate boxplot of vitamin C vs weight. 
 ```{r vitamin C and weight}
 x <- data.vals[,c("vitamin.c","weight")]
-bvbox(x,method="robust")
+bvbox(x,method="robust", xlab = "Vitamin C (DV%)", ylab = "Weight (g)", type="n")
 text(x[c(6,15,17,31,35,36,37,41),"vitamin.c"],x[c(6,15,17,31,35,36,37,41),"weight"],labels=data$food.item[c(6,15,17,31,35,36,37,41)],cex=1)
+points(x = x[-c(6,15,17,31,35,36,37,41),'vitamin.c'], y= x[-c(6,15,17,31,35,36,37,41),'weight'])
+
 
 ```
 
@@ -306,14 +363,20 @@ The bivariate boxplots for the other variables did not highlight any key outlier
 
 Now that we have a general sense of some of the relationships that these nutrients have, what about how they relate to the food items specifically? Using a star plot, let's take a closer look at how the foods stack up in terms of what they have to offer for vitamins and minerals. Spinach was removed from these plots because it has exceptionally high values for all four categories.
 
+
+
+**Figure 11:** Starplot of all food items except spinach. The axis pointing up corresponds to vitamin c, to the right is vitamin A, toward the bottom is calcium, and to the left is iron.
 ```{r starplot without spinach}
 
-stars(data[-c(36),c("vitamin.a","vitamin.c","iron","calcium")],labels=data$food.item[-36])
+stars(data[-c(36),c("vitamin.a","vitamin.c","iron","calcium")],labels=data$food.item[-36], main="Starplots")
 
 ```
 
 The plots party reinforce the idea that fruits and veggies are rich in these nutrients, as the food items that stand out are all from these groups. An issue with these plots, however, is that some foods with high values dominate a particular axis. For example, because 300 calories of carrots provides 2448% of your daily value of vitamin A, most other foods appear to offer next to nothing from the graphs (even though this is not true). To address this issue, and address another nutritional question, values that exceeded 100 percent daily value were converted down to 100 percent. This analysis might provide more insight to someone who is simply worried about meeting their daily value requirements, and doesn't care about an excess amount of a particular vitamin or mineral. The star plots are as follows:
 
+
+
+**Figure 12:** Starplot of all food items with daily values exceeding 100% converted down to 100%. The axis pointing up corresponds to vitamin c, to the right is vitamin A, toward the bottom is calcium, and to the left is iron.
 ```{r star plots all scaled down to 100 dv}
 data.dv <- data %>% 
   mutate(vitamin.a = ifelse(vitamin.a > 100, 100, vitamin.a)) %>% 
@@ -321,17 +384,20 @@ data.dv <- data %>%
   mutate(iron = ifelse(iron > 100, 100, iron)) %>% 
   mutate(calcium = ifelse(calcium > 100, 100, calcium))
 
-stars(data.dv[,c("vitamin.a","vitamin.c","iron","calcium")],labels = data.dv$food.item)
+stars(data.dv[,c("vitamin.a","vitamin.c","iron","calcium")],labels = data.dv$food.item, main = "Starplots")
 
 ```
 
 There are a lot of interpretations that can be taken from this graph. One can imagine meeting their vitamin A, vitamin C, iron, and calcium needs by choosing a combination of foods that axis all add up to the max length. Spinach stands out from the rest, as a 300 calories serving would satisfy your daily values for all four of these vitamins and minerals. It's also clear that meats provide little nutritional value in this department. While yogurt, milk, and cheese offer a decent source of calcium, the other nutrients are predominantly found in fruits and vegetables.
 
+
+
+**Figure 13:** starplot of fruits and vegetables with values exceeding 100% converted to 100%. The axis pointing up corresponds to vitamin c, to the right is vitamin A, toward the bottom is calcium, and to the left is iron.
 ```{r fruits and veggies}
 
 data.dv.fv <- data.dv %>% filter(group == "fruit"| group =="vegetable")
 
-stars(data.dv.fv[,c("vitamin.a","vitamin.c","iron","calcium")],labels = data.dv.fv$food.item)
+stars(data.dv.fv[,c("vitamin.a","vitamin.c","iron","calcium")],labels = data.dv.fv$food.item, main="Fruit and Vegetable Starplots")
 
 ```
 
@@ -341,16 +407,18 @@ Taking a closer look, spinach, broccoli, green beans, peas, carrots, peppers and
 
 More generally speaking, we might wonder which of these foods are more similar or distinct. One way to address this is through multidimensional scaling. Since I am concerned about the magnitude of their similarities and not just their ranked order, I will use classical multidimensional scaling. To calculate the proximity matrix, I used the Euclidean distances between the rows and the standardized data. The data was projected onto two dimensions. 
 
+**Figure 14**
 ```{r mds}
 
 d <- dist(data.scale) # euclidean distances between the rows
 cmd <- cmdscale(d,eig=TRUE, k=2) # k is the number of dim
 
+colors <- c("blue","purple","brown","black","red","darkgreen")
 # plot solution 
 x <- cmd$points[,1]
 y <- cmd$points[,2]
 plot(x, y, xlab="Coordinate 1", ylab="Coordinate 2", 
-  main="Metric	MDS",	type="n")
+  main="Metric Multidimensional Scaling",	type="n")
 gp <- data$group == "vegetable"
 text(x[gp],y[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- data$group == "fruit"
@@ -363,6 +431,7 @@ gp <- data$group == "dairy"
 text(x[gp],y[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(x[gp],y[gp],labels=data$food.item[gp],col="black")
+legend("bottomright", legend=levels(data$group), pch=16, col=colors)
 ```
 
 The first observation is one that we have been seeing: spinach is truly a unique food as it's off in nowhere land by itself. 
@@ -373,15 +442,20 @@ On the grander scale, there is clear divide down the middle of the graph. Meat, 
 
 To further explore these natural groupings and the possible reasoning, I will resort to a similar approach in principal component analysis. To examine the macronutrient relationship among these foods, I removed the four vitamins and minerals for analysis. Because the macronutrient data are not on relatively similar scales, I will use the correlation matrix over the covariance matrix to calculate the principal components. The data was plotted on the first two principal components, with the first component accounting for 50% of the variance and the second component accounting for an additional 18%. 
 
+**Sodium isn't included, but not included as miconutrient in previous sections**
+
+**Figure 15**
 ```{r pca macronutrients}
-data.macro <- data.vals[,2:9]
+data.macro <- data.vals[,c(2:6,8,9)]
 pca <- princomp(data.macro, cor = TRUE) # correlation matrix used, so data is on same scale
 summary(pca)
 print(pca$loadings)
 
+colors <- c("blue","purple","brown","black","red","darkgreen")
+
 PC1scores <- pca$scores[,1]
 PC2scores <- pca$scores[,2]
-plot(PC1scores,PC2scores)
+plot(PC1scores,PC2scores, xlab = "PC 1 (50%)", ylab = "PC 2 (18%)", main="PCA of Macronutrients", type = "n")
 gp <- data$group == "vegetable"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- data$group == "fruit"
@@ -394,6 +468,8 @@ gp <- data$group == "dairy"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
+legend("bottomright", legend=levels(data$group), pch=16, col=colors)
+
 
 ```
 
@@ -401,6 +477,7 @@ This graph shows a lot of the same patterns that the multidimensional scaling pl
 
 Turning the analysis back to vitamins and minerals, let's use the same principal component analysis approach on vitamin A, vitamin C, calcium, and iron. The data was plotted on the first two principal components, with the first component accounting for 55% of the variance and the second component accounting for an additional 23%. 
 
+**Figure 16**
 ```{r pca vitamins and minerals}
 
 # Vitamins and Minerals
@@ -409,7 +486,7 @@ summary(pca)
 print(pca$loadings)
 PC1scores <- pca$scores[,1]
 PC2scores <- pca$scores[,2]
-plot(PC1scores,PC2scores)
+plot(PC1scores,PC2scores, main = "PCA of Vitamins and Minerals", xlab = "PC1 (55%)", ylab = "PC2 (23%)",type = 'n')
 gp <- data$group == "vegetable"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- data$group == "fruit"
@@ -423,7 +500,19 @@ text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
 
-biplot(pca,xlabs=data$food.item)
+# biplot(pca, xlabs=data$food.item, xlim=c(-10,10), ylim=c(-10,10))
+# gp <- data$group == "vegetable"
+# text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="darkgreen")
+# gp <- data$group == "fruit"
+# text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="purple")
+# gp <- data$group == "meat"
+# text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="red")
+# gp <- data$group == "grain"
+# text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="brown")
+# gp <- data$group == "dairy"
+# text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="blue")
+# gp <- data$group == "legume/nut"
+# text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
 
 
 
@@ -431,6 +520,7 @@ biplot(pca,xlabs=data$food.item)
 
 From the first component's loading, we can tell that values higher on the first axis tend be higher vitamins and minerals. The second axis largely reflects values of vitamin C. Most of the data is clustered around (0,0), with a handful of exceptions. Celery, carrots, spinach, tomatoes, oranges, cauliflower, broccoli, and peppers are separated from the pack because of their high nutritional values. While this plot is able to highlight these exceptionally rich foods, it does a poor job offering nutritional insight on the rest of the data. This is not ideal, because many of these foods do offer key nutrients that can help a healthy diet. To get a better picture of these lower valued foods, the analysis was repeated after removing the eight previously mentioned foods that stood out from the cluster. 
 
+**Figure 17:** PCA of vitamins and minerals with outliers removed. 
 ```{r pca vitamins and minerals outliers removed}
 
 data.q <- data[-c(6,15, 17, 20, 31, 35, 36, 41),]
@@ -458,7 +548,8 @@ The graph explains 69% of the total variance, with the first component explainin
 
 Let's bring the data back together and see if there any patterns we haven't found with the entire dataset. Using a scree plot to graph the principal components versus the eigenvalues, it appears that three principal components could be reasonable from the elbow in the graph. It's important to note that these three components only account for 66% of the total variation, so they do not tell the entire story. However, because I want to maintain interpretability and the principal components are harder to understand, I don't think it'd be advantageous to examine 7 or 8 components to account for most of the variation. 
 
-```{r pca 3 components}
+**Figure 18**
+```{r pca 3 scree plot}
 pca <- princomp(data.vals, cor = TRUE) # correlation matrix used, so data is on same scale
 print(pca$loadings)
 summary(pca)
@@ -466,7 +557,9 @@ summary(pca)
 eigvals <- pca$sdev^2
 k <- length(eigvals)
 plot(1:k,eigvals,type="b",xlab="i",ylab=expression(lambda[i]))
-
+```
+**Figuer 19**
+```{r pc1 pc2}
 # PC1 vs PC2 with food category colored
 PC1scores <- pca$scores[,1]
 PC2scores <- pca$scores[,2]
@@ -483,7 +576,9 @@ gp <- data$group == "dairy"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
-
+```
+**Figure 20**
+```{r pc1 pc3}
 # PC1 vs PC3 with food category colored
 PC1scores <- pca$scores[,1]
 PC3scores <- pca$scores[,3]
@@ -500,7 +595,9 @@ gp <- data$group == "dairy"
 text(PC1scores[gp],PC3scores[gp],labels=data$food.item[gp],col="blue")
 gp <- data$group == "legume/nut"
 text(PC1scores[gp],PC3scores[gp],labels=data$food.item[gp],col="black")
-
+```
+**Figure 21**
+```{r pc2 pc3}
 # PC2 vs PC3 with food category colored
 PC2scores <- pca$scores[,2]
 PC3scores <- pca$scores[,3]
@@ -530,7 +627,7 @@ We've seen from multidimensional scaling and principal component analysis that t
 
 Initially, I attempted k means clustering analysis by minimizing the the within-group sum of squares over the standardized variables. The scree plot did not indicate a clear choice for k, so values from 3 to 10 were tested to see if they found interesting/insightful clusters. This approach didn't produce useful results, and it was often hard to understand why certain items were being clustered together. I assume this method didn't work well because of its tendency to cluster into shapes of about equal sizes, which is not ideal for this dataset considering there is likely different variances across clusters. 
 
-To address k-means shortcomings, I turned to a model-based clustering approach. BIC was calculated on cluster values from 1 to 8 for the various models. The lowest BIC value was from the "VII" model with 6 clusters. The "VII" model is characterized as having spherical clusters of unequal volume, partly confirming why k-means wasn't satisfactory. The clusters are as displayed in print and also using the first two principal components. 
+To address k-means shortcomings, I turned to a model-based clustering approach. BIC was calculated on cluster values from 1 to 8 for the various models. The lowest BIC value was from the "VII" model with 6 clusters. The "VII" model is characterized as having spherical clusters of unequal volume, partly confirming why k-means wasn't satisfactory. The clusters are as displayed in print and also using multidimensional scaling. 
 
 ```{r model based clustering}
 library(mclust)
@@ -544,23 +641,34 @@ for(i in 1:k){
   print(paste("Cluster",i))
   print(names[mclass == i])
 }
+```
+**Figure 22**
+```{r cluster pca}
 
-pca <- princomp(data.vals, cor = TRUE)# correlation matrix used, so data is on same scale
-PC1scores <- pca$scores[,1]
-PC2scores <- pca$scores[,2]
-plot(PC1scores,PC2scores, type = 'n')
+d <- dist(data.scale) # euclidean distances between the rows
+cmd <- cmdscale(d,eig=TRUE, k=2) # k is the number of dim
+# plot solution 
+x <- cmd$points[,1]
+y <- cmd$points[,2]
+plot(x, y, xlab="Coordinate 1", ylab="Coordinate 2", 
+  main="Metric Multidimensional Scaling",	type="n")
+
+colors <- c("brown","red","turquoise","darkgreen","purple", "black")
+
 gp <- mclass == 1
-text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="brown")
+text(x[gp],y[gp],labels=data$food.item[gp],col="brown")
 gp <- mclass == 2
-text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="red")
+text(x[gp],y[gp],labels=data$food.item[gp],col="red")
 gp <- mclass == 3
-text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="turquoise")
+text(x[gp],y[gp],labels=data$food.item[gp],col="turquoise")
 gp <- mclass == 4
-text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="darkgreen")
+text(x[gp],y[gp],labels=data$food.item[gp],col="darkgreen")
 gp <- mclass == 5
-text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="purple")
+text(x[gp],y[gp],labels=data$food.item[gp],col="purple")
 gp <- mclass == 6
-text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
+text(x[gp],y[gp],labels=data$food.item[gp],col="black")
+legend("bottomright", legend=levels(as.factor(mclass)), pch=16, col=colors, title = "Cluster")
+
 
 ```
 
