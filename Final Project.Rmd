@@ -23,6 +23,7 @@ library(ggcorrplot)
 
 #Abstract
 
+My research sets out to explore the nutrition of common foods we eat. Not all foods were included, but 41 foods that are commonplace in an American diet were analyzed on a calorie for calorie basis. The data analyzed collectively, as well as looking at macronutrient and micronutrient compositions individually at times. Among the many methods applied were starplots, multidimensional scaling, principal component analysis, and clustering methods. There are many takeaways from the analysis, some of which are included in the report and some not, but a few were more interesting than others. Contrary to my hypothesis, there appears to be no relationship between the macronutrient and micronutrient composition of a food. There was a slight positive relationships among micronutrients, however, as foods high in one micronutrient were more likely to be high in another. Fruits and vegetables were the main sources of vitamins and minerals; dairy products serve as a good source of calcium, but the other food groups offer little nutritional value in this department. Spinach was a truly unique food providing exceptionally high vitamin and mineral values across the board. The food groups that we biologically categorize foods into also do an impressive job at grouping foods that are nutritionally similar. The exceptions are sometimes intuitive, and sometimes not. Particular benefits and disadvantages of certain foods are highlighted throughout the report.
 
 #Introduction
 
@@ -30,7 +31,7 @@ Nutrition is a fundamental aspect of our lives. The foods we eat can have a subs
 
 Because of nutrition's universal importance, it's probably a good idea that we understand it. This is the motivation for this report: to evaluate the nutrition of common foods we eat.  
 
-###About the Data
+####About the Data
 
 ```{r data import and preprocess}
 # read data in and format
@@ -67,11 +68,16 @@ data.vm <- data.vals[,c(10:13)]
 
 ```
 
-To understand the nutrients we put into our bodies, I set out to collect data from www.verywellfit.com. I selected 41 different food items (see appendix)  in total, and they were chosen because of their commonplace in my personal diet. While you might find some of these foods obscure, I would assume that most of these foods are commonplace in the American diet.  Each food item had a corresponding nutrition label on the website, which is where the data was web scraped from. Originally, the data contained 16 variables for one serving of the food item: Food Item, Food Group, Weight (g), Calories, Total Fat (g), Saturated Fat (g), Cholesterol (mg), Sodium (mg), Total Carbs (g), Sugar (g), Fiber (g), Protein (g), Vitamin A (daily value %), Vitamin C (dv %), Iron (dv %), and Calcium (dv %).  While there are certainly other variables that could be considered for nutritional analysis, these variables are usually considered among the most important, and that is why they are readily available on most nutritional labels.  
+To understand the nutrients we put into our bodies, I set out to collect data from www.verywellfit.com. I selected 41 different food items (see next section)  in total, and they were chosen because of their commonplace in my personal diet. While you might find some of these foods obscure, I would assume that most of these foods are commonplace in the American diet.  Each food item had a corresponding nutrition label on the website, which is where the data was web scraped from. Originally, the data contained 16 variables for one serving of the food item: Food Item, Food Group, Weight (g), Calories, Total Fat (g), Saturated Fat (g), Cholesterol (mg), Sodium (mg), Total Carbs (g), Sugar (g), Fiber (g), Protein (g), Vitamin A (daily value %), Vitamin C (dv %), Iron (dv %), and Calcium (dv %).  While there are certainly other variables that could be considered for nutritional analysis, these variables are usually considered among the most important, and that is why they are readily available on most nutritional labels.  
 
 Because the data was web scraped from a consistently formatted website, there were little issues with missing or inaccurate data. The only exception to this was that four foods (sweet corn, green beans, onions, and ham) did not contain information on saturated fat. Since I wanted to preserve these data points and column variables, the missing data was imputed. Mean imputation was ruled out because saturated fat content varies quite a bit from food to food, so these values would likely be inaccurate. Rather, because saturated fat content in highly predictable from total fat content, I used deterministic regression imputation to replace the missing values. Total fat and cholesterol were the two predictors used to make linear regression predictions for the saturated fat value. While this has the potential to reduce the variance of saturated fat and possibly inflate the correlation between saturated fat and the predictor variables, I am not concerned with these issues. While other nutrition labels have slight differences of nutrient values of the same food, they are still very close. The imputed values were compared and nearly identical to similar nutrition labels of the same food item. 
 
 Because the serving sizes vary from food to food, it's not reasonable to compare the data in its current state. There are two ways I could choose to scale the dataset to make it more comparable: scaling to the same calorie value or to the same weight value. Each choice has its pros and cons and will lead to a slightly different interpretation of the data. Scaling to the weight value might be more intuitive if you are concerned with the nutrients obtained from eating a serving of the food, as weight values tend to predict how filling a food is. Scaling to the calorie value might be more beneficial to someone concerned with meeting their daily nutrient needs on a limited calorie intake (such as someone watching their weight). I chose the latter method out of personal interest, and all nutrient values were scaled to a 300 calorie serving of the food. It's important to remember the drawback of the calorie for calorie analysis, and note that lower calorie foods will have larger servings in terms of weight. I prefer this method; I think it provides a better nutritional evaluation if we aren't concerned with factoring in hunger, and I find it slightly easier to conceptualize than weights of food. 
+
+####Food item reference
+
+The following 41 foods items will be referenced in the report, most of which are abbreviated: corn, boneless chicken breast (chkn), ground beef 90% lean (beef), baked potato (ptto), 1% milkfat cottage cheese (cttg chs), broccoli (broc), plain whole milk yogurt (ygrt), green beans (gbean), whole wheat bread (brd), 2% milk (mlk), apple, banana (bna), grapes (grp), cherries (chrrs), orange (orng), onion, red bell pepper (pppr), salmon (slm), swiss cheese (cheese), carrots (crrt), whole wheat bagel (bgl), pear (prs), turkey breast (trky), steak (stk), ham, peanuts (pnut), almonds (almnd), brown rice (rice), oats, granola (grnla), celery (clry), snap peas (peas), peaches (pchs), watermelon (wmel), cauliflower (clflwr), spinach (spch), cucumber (ccmbr), black beans (bbean), bacon (bcn), egg, and tomato (tmto).
+
 
 #Goals
 
@@ -125,11 +131,11 @@ for(variable in colnames(data.vals[13])){
 
 The plots clearly indicated that none of the variables follow a normal distribution. This is further validated by the Shapiro-Wilk Test conducted on all 13 variables, resulting in all p-values below the 0.001 threshold and rejecting the null hypothesis that they come from a normal distribution. The qq plots also indicate a heavy tail in many of the variables.
 
-To inspect this further, let's plot the density distributions of these variables. **The variables were scaled by subtracting the column and mean and dividing by the column standard deviation for each value (i.e. standardization) so they could be more easily compared (with the exception of vitamin A). The density distribution of each variable is represented on one of the following four graphs.**
+To inspect this further, let's plot the density distributions of these variables. The variables were scaled by subtracting the column and mean and dividing by the column standard deviation for each value (i.e. standardization) so they could be more easily compared (with the exception of vitamin A). The density distribution of each variable is represented on one of the following four graphs.
 
 
 
-**Figure 2:** Density graphs for all quantitative variables. All variables are standardized with the exception of Vitamin A
+**Figure 2:** all variables are standardized with the exception of Vitamin A
 ```{r message=FALSE}
 
 x <- data.frame(Weight=data.scale$weight, Total.Fat=data.scale$total.fat,Saturated.Fat=data.scale$saturated.fat,
@@ -164,19 +170,19 @@ ggarrange(g3, g4,
           ncol = 1, nrow = 2)
 ```
 
-The initial takeaway from these density plots is that most the variables have a right skew to them. Total Carbs might be the one exception, which seem to follow a form of bimodal distribution. These heavy tailed distributions are likely partly due to the fact that the variables have lots of zero values.
+The initial takeaway from these density plots is that most the variables have a right skew to them. Total Carbs might be the one exception, which seem to follow a form of bimodal distribution. These heavy tailed distributions are likely partly due to the fact that the variables have lots of zero values. 
 
-Taking a closer look at Fig 1 and Fig 2, this is especially true for the vitamins and minerals. Most values seem to fall close together with little to no nutritional value, with a few obvious exceptions at much higher values. This is especially clear in for Vitamin A, which has two very extreme outliers at nearly 2500% daily value, and a few other food items standing apart from the majority which have low values. 
+Taking a closer look at the third and fourth graph in Figure 2, this is especially true for the vitamins and minerals. Most values seem to fall close together with little to no nutritional value, with a few obvious exceptions at much higher values. This is especially clear in for Vitamin A, which has two very extreme outliers at nearly 2500% daily value, and a few other food items standing apart from the majority which have low values. 
 
 These distributions indicate that outliers are present in the data, so the analysis must be conscious of this in the process. 
 
 ###Relationship Between Variables
 
-Next, let's examine the relationship among the variables through a correlation matrix. Because the sample size is relatively small, I calculated correlation confidence intervals and p-values to help determine whether or not a relationship was statistically significant. To account for the non-normality of the data, I used bootstrap sample with 1000 replications for these calculations. All variables discussed as having a meaningful relationship had correlation values that were significant at the 1% level. The following plot depicts the information from the correlation matrix rounded to the first decimal. 
+Next, let's examine the relationship among the variables through a correlation matrix. Because the sample size is relatively small, I calculated correlation confidence intervals and p-values to help determine whether or not a relationship was statistically significant. To help account for the non-normality of the data, I used bootstrap sample with 1000 replications for these calculations. All variables discussed as having a meaningful relationship had correlation values that were significant at the 1% level. The following plot depicts the information from the correlation matrix. 
 
 
 
-**Figure 3:** correlelogram of variables rounded to first decimal place. 
+**Figure 3:** values rounded to first decimal place. 
 ```{r correlelogram}
 corr <- round(cor(data[,c(3:dim(data)[2])]), 1) # select rows with continuous variables (e.g. cor(data[c(3,5,8,9)]) )
 ggcorrplot(corr, hc.order = TRUE, 
@@ -191,7 +197,7 @@ ggcorrplot(corr, hc.order = TRUE,
 
 There a few observations I want to point out. 
 
-The highest correlation was 0.79 between total fat and saturated fat. This shouldn't surprise us, as total fat is composed of saturated and unsaturated fat. However, this point might be used to counter the argument of "not all fat is bad" that you sometimes hear people say.  While this point has merit (unsaturated fats are indeed good for you), it seems like total fat is a good indicator of the level of unhealthy fat. Generally speaking, fat is bad. "Not all fat is bad" likely only applies to unique foods that were excluded from this analysis. 
+The highest correlation was 0.79 between total fat and saturated fat. This shouldn't surprise us, as total fat is composed of saturated and unsaturated fat. However, this point might be used to counter the argument of "not all fat is bad" that you sometimes hear people say.  While this point has merit (unsaturated fats are indeed good for you), it seems like total fat is a good indicator of the level of unhealthy fat. Generally speaking, fat is bad. "Not all fat is bad" doesn't have much application in our dataset, and likely only applies to unique foods that were excluded from this analysis. 
 
 Sugar and fiber, being types of carbs, have decently strong correlation with total carbs (&rho;=0.70, &rho;=0.58, respectively). Protein, being the third macronutrient after fat and carbs, has strong negative correlation with total carbs (&rho;= -0.76). These observations made so far shouldn't be surprising and won't be the focus of the analysis despite some of the largest correlation values. However, it's important to note this relationship with those unfamiliar with macronutrient composition of foods. One could also takeaway to try and eat higher protein foods if they are trying to limit their sugar intake (correlation of sugar and protein is -0.57). 
 
@@ -237,7 +243,7 @@ annotate_figure(figure,
                 )
 ```
 
-Let's look at our vitamin & minerals (i.e. vitamin A, vitamin C , iron, and calcium). From the correlation matrix, there appears to be no relationship between vitamins & minerals and the macronutrient composition (i.e. Total carbs, total fat, protein) of the food.  The 12 corresponding variables correlation values fell between -0.3 and 0.3, and none of these values were significant at the 5% level.  A canonical correlation analysis between the three macronutrient variables and four vitamin & mineral variables confirmed this observation of no relationship. This is an interesting observation, and rules out further analysis for the hypotheses that macronutrient composition is related to vitamin & mineral composition.  
+Let's look at our vitamin & minerals (i.e. vitamin A, vitamin C , iron, and calcium). From the correlation matrix, there appears to be no relationship between vitamins & minerals and the macronutrient composition (i.e. total carbs, total fat, protein) of the food. The 12 corresponding variables correlation values fell between -0.3 and 0.3, and none of these values were significant at the 5% level.  A canonical correlation analysis between the three macronutrient variables and four vitamin & mineral variables confirmed this observation of no relationship. This is an interesting observation, and rules out further analysis for the hypotheses that macronutrient composition is related to vitamin & mineral composition.  
 
 
 
@@ -299,11 +305,11 @@ annotate_figure(figure,
 
 Sodium stands alone as the sole variable with no meaningful relationships with any other variables; no correlation values were significant at the 5% level. 
 
-With the exception of Vitamin C, there seems to be a decently strong association between the other 3 vitamins & minerals. Upon examining the bivariate boxplots (robust method used) of these variables, however, there is an interesting observation. These plots typically show little relationship with the exception of a few key outliers. After removing these outliers, the correlation coefficients are considerably lower. A bivariate boxplot of vitamin A versus iron indicates spinach and carrots as two potential outliers. After removing them, the correlation coefficient decreased from 0.62 to 0.18. 
+With the exception of Vitamin C, there seems to be a decently strong association between the other 3 vitamins & minerals. Upon examining the bivariate boxplots of these variables, however, there is an interesting observation. These plots typically show little relationship with the exception of a few key outliers. After removing these outliers, the correlation coefficients are considerably lower. A bivariate boxplot of vitamin A versus iron indicates spinach and carrots as two potential outliers. After removing them, the correlation coefficient decreased from 0.62 to 0.18. 
 
 
 
-**Figure 7:** Nonrobust bivariate boxplot of vitamin A vs Iron
+**Figure 7:** Nonrobust bivariate boxplot of vitamin A vs iron
 ```{r bivariate}
 
 # vitamin A vs Iron
@@ -341,6 +347,7 @@ points(x = x[-c(31,10,19,7,32,36),'iron'], y= x[-c(31,10,19,7,32,36),'calcium'])
 
 
 ```
+
 These observation shouldn't lead us to the conclusion that these variables aren't related, however. We don't want to exclude these outliers from our analysis, but rather, we should be focusing on them. Instead of disregarding them, these should be the foods we are keying in on as foods to eat, as they often have a high values of multiple vitamins and minerals. 
 
 When the outliers are removed for vitamin C and weight, there is an opposite effect. The correlation becomes much stronger, increasing from 0.46 to 0.83. Ignoring the foods with quite high values, there is a very strong association at the bottom end for foods with small values of vitamin c and weight. 
@@ -365,7 +372,8 @@ Now that we have a general sense of some of the relationships that these nutrien
 
 
 
-**Figure 11:** Starplot of all food items except spinach. The axis pointing up corresponds to vitamin c, to the right is vitamin A, toward the bottom is calcium, and to the left is iron.
+**Figure 11:** Starplot of all food items except spinach. The axis pointing up corresponds to vitamin C, to the right is vitamin A, toward the bottom is calcium, and to the left is iron.
+
 ```{r starplot without spinach}
 
 stars(data[-c(36),c("vitamin.a","vitamin.c","iron","calcium")],labels=data$food.item[-36], main="Starplots")
@@ -388,7 +396,7 @@ stars(data.dv[,c("vitamin.a","vitamin.c","iron","calcium")],labels = data.dv$foo
 
 ```
 
-There are a lot of interpretations that can be taken from this graph. One can imagine meeting their vitamin A, vitamin C, iron, and calcium needs by choosing a combination of foods that axis all add up to the max length. Spinach stands out from the rest, as a 300 calories serving would satisfy your daily values for all four of these vitamins and minerals. It's also clear that meats provide little nutritional value in this department. While yogurt, milk, and cheese offer a decent source of calcium, the other nutrients are predominantly found in fruits and vegetables.
+There are a lot of interpretations that can be taken from this graph. One can imagine meeting their vitamin A, vitamin C, iron, and calcium needs by choosing a combination of foods that axes all add up to the max length. Spinach stands out from the rest, as a 300 calories serving would satisfy your daily values for all four of these vitamins and minerals. It's also clear that meats provide little nutritional value in this department. While yogurt, milk, and cheese offer a decent source of calcium, the other nutrients are predominantly found in fruits and vegetables.
 
 
 
@@ -408,6 +416,7 @@ Taking a closer look, spinach, broccoli, green beans, peas, carrots, peppers and
 More generally speaking, we might wonder which of these foods are more similar or distinct. One way to address this is through multidimensional scaling. Since I am concerned about the magnitude of their similarities and not just their ranked order, I will use classical multidimensional scaling. To calculate the proximity matrix, I used the Euclidean distances between the rows and the standardized data. The data was projected onto two dimensions. 
 
 **Figure 14**
+
 ```{r mds}
 
 d <- dist(data.scale) # euclidean distances between the rows
@@ -440,17 +449,24 @@ It also becomes clear that most of the data is clustered around its own food gro
 
 On the grander scale, there is clear divide down the middle of the graph. Meat, dairy, and nuts are found exclusively to the right, while fruits and vegetables are founds exclusively to the left. Grains find themselves closer to fruits and vegetables, but are more toward the center than any other group. All in all, multidimensional scaling divided the food into clusters that matched much of our preconceived notions of which of these foods are similar and dissimilar. While foods are grouped by biological reasons, such as containing seeds or being the flesch of an animal, their nutrient composition is reflected fairly accurately by these groupings as well. 
 
-To further explore these natural groupings and the possible reasoning, I will resort to a similar approach in principal component analysis. To examine the macronutrient relationship among these foods, I removed the four vitamins and minerals for analysis. Because the macronutrient data are not on relatively similar scales, I will use the correlation matrix over the covariance matrix to calculate the principal components. The data was plotted on the first two principal components, with the first component accounting for 50% of the variance and the second component accounting for an additional 18%. 
+To further explore these natural groupings and the possible reasoning, I will resort to a similar approach in principal component analysis. To examine the macronutrient relationship among these foods, I removed the four vitamins and minerals as well as sodium for analysis. Because the macronutrient data are not on relatively similar scales, I will use the correlation matrix instead of the covariance matrix to calculate the principal components. The data was plotted on the first two principal components, with the first component accounting for 50% of the variance and the second component accounting for an additional 18%. 
 
 **Sodium isn't included, but not included as miconutrient in previous sections**
 
-**Figure 15**
+**Table 1**
 ```{r pca macronutrients}
 data.macro <- data.vals[,c(2:6,8,9)]
 pca <- princomp(data.macro, cor = TRUE) # correlation matrix used, so data is on same scale
 summary(pca)
+```
+**Table 2**
+```{r pca loading}
 print(pca$loadings)
+```
 
+**Figure 15**
+
+```{r pca macro graph}
 colors <- c("blue","purple","brown","black","red","darkgreen")
 
 PC1scores <- pca$scores[,1]
@@ -473,17 +489,24 @@ legend("bottomright", legend=levels(data$group), pch=16, col=colors)
 
 ```
 
-This graph shows a lot of the same patterns that the multidimensional scaling plot showed us, so I will not repeat them. After removing vitamins and minerals, however, we notice that spinach is no longer seen as an extreme outlier. From examining the PCA loadings of the first component, there's some insight as to why there is a clear division between meat, dairy, and nuts versus fruits, vegetables, and grain.  The first component seems to represent the contrast that carbohydrates (total carbs, fiber, sugar) have with fats (total fat, saturated fat, cholesterol) and protein. The second component is also able to distinguish fruit from vegetables fairly effectively. From looking at the loadings and examining the data closer, this is mostly due to the distinct differences in sugar, fiber, and protein. Fruits tend to much higher in sugar content, whereas vegetables are far and away the best source of fiber.  Fruits also have the lowest protein values among all the food groups, while vegetables provide some protein, sometimes in high amounts. For example, you may have heard the dubious saying that "broccoli has more protein than steak", which  relies on a calorie for calorie analysis like ours. While my analysis disproves this notion, broccoli does offer a high value of 24g of protein compared to steak's 40g. 
+This graph shows a lot of the same patterns that the multidimensional scaling plot showed us, so I will not repeat them. After removing vitamins and minerals, however, we notice that spinach is no longer seen as an extreme outlier. From examining the PCA loadings (Table 2) of the first component, there's some insight as to why there is a clear division between meat, dairy, and nuts versus fruits, vegetables, and grain.  The first component seems to represent the contrast that carbohydrates (total carbs, fiber, sugar) have with fats (total fat, saturated fat, cholesterol) and protein. The second component is also able to distinguish fruit from vegetables fairly effectively. From looking at the loadings and examining the data closer, this is mostly due to the distinct differences in sugar, fiber, and protein. Fruits tend to much higher in sugar content, whereas vegetables are far and away the best source of fiber.  Fruits also have the lowest protein values among all the food groups, while vegetables provide some protein, sometimes in high amounts. For example, you may have heard the dubious saying that "broccoli has more protein than steak", which  relies on a calorie for calorie analysis like ours. While my analysis disproves this notion, broccoli does offer a high value of 24g of protein compared to steak's 40g. 
 
 Turning the analysis back to vitamins and minerals, let's use the same principal component analysis approach on vitamin A, vitamin C, calcium, and iron. The data was plotted on the first two principal components, with the first component accounting for 55% of the variance and the second component accounting for an additional 23%. 
 
-**Figure 16**
+**Table 3**
 ```{r pca vitamins and minerals}
 
 # Vitamins and Minerals
 pca <- princomp(data.vm,cor=TRUE)
 summary(pca)
+```
+**Table 4**
+```{r pca vit and min loadings}
 print(pca$loadings)
+```
+**Figure 16**
+
+```{r pca vitamins and minerals graph}
 PC1scores <- pca$scores[,1]
 PC2scores <- pca$scores[,2]
 plot(PC1scores,PC2scores, main = "PCA of Vitamins and Minerals", xlab = "PC1 (55%)", ylab = "PC2 (23%)",type = 'n')
@@ -514,51 +537,63 @@ text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
 # gp <- data$group == "legume/nut"
 # text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
 
-
-
 ```
 
-From the first component's loading, we can tell that values higher on the first axis tend be higher vitamins and minerals. The second axis largely reflects values of vitamin C. Most of the data is clustered around (0,0), with a handful of exceptions. Celery, carrots, spinach, tomatoes, oranges, cauliflower, broccoli, and peppers are separated from the pack because of their high nutritional values. While this plot is able to highlight these exceptionally rich foods, it does a poor job offering nutritional insight on the rest of the data. This is not ideal, because many of these foods do offer key nutrients that can help a healthy diet. To get a better picture of these lower valued foods, the analysis was repeated after removing the eight previously mentioned foods that stood out from the cluster. 
+From the first component's loading in Table 4, we can tell that values higher on the first axis tend be higher vitamins and minerals. The second axis largely reflects values of vitamin C. Most of the data is clustered around (0,0), with a handful of exceptions. Celery, carrots, spinach, tomatoes, oranges, cauliflower, broccoli, and peppers are separated from the pack because of their high nutritional values. While this plot is able to highlight these exceptionally rich foods, it does a poor job offering nutritional insight on the rest of the data. This is not ideal, because many of these foods do offer key nutrients that can help a healthy diet. To get a better picture of these lower valued foods, the analysis was repeated after removing the eight previously mentioned foods that stood out from the cluster and plotted with a biplot. 
 
-**Figure 17:** PCA of vitamins and minerals with outliers removed. 
+**Table 5**
 ```{r pca vitamins and minerals outliers removed}
 
 data.q <- data[-c(6,15, 17, 20, 31, 35, 36, 41),]
 pca <- princomp(data.vm[-c(6,15, 17, 20, 31, 35, 36, 41),], cor=TRUE)
-biplot(pca,xlabs=data$food.item[-c(6,15, 17, 20, 31, 35, 36, 41)])
 summary(pca)
-PC1scores <- pca$scores[,1]
-PC2scores <- pca$scores[,2]
-plot(PC1scores,PC2scores,type = "n")
-gp <- data.q$group == "vegetable"
-text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="darkgreen")
-gp <- data.q$group == "fruit"
-text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="purple")
-gp <- data.q$group == "meat"
-text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="red")
-gp <- data.q$group == "grain"
-text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="brown")
-gp <- data.q$group == "dairy"
-text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="blue")
-gp <- data.q$group == "legume/nut"
-text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="black")
+```
+**Figure 17:** Biplot of vitamins and minerals with outliers removed. 
+
+```{r pca v&m outliers removed biplot}
+
+biplot(pca,xlabs=data$food.item[-c(6,15, 17, 20, 31, 35, 36, 41)], xlab = "PC1 (69%)", ylab = "PC2 (23%)")
+# PC1scores <- pca$scores[,1]
+# PC2scores <- pca$scores[,2]
+# plot(PC1scores,PC2scores,type = "n")
+# gp <- data.q$group == "vegetable"
+# text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="darkgreen")
+# gp <- data.q$group == "fruit"
+# text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="purple")
+# gp <- data.q$group == "meat"
+# text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="red")
+# gp <- data.q$group == "grain"
+# text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="brown")
+# gp <- data.q$group == "dairy"
+# text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="blue")
+# gp <- data.q$group == "legume/nut"
+# text(PC1scores[gp],PC2scores[gp],labels=data.q$food.item[gp],col="black")
 ```
 
-The graph explains 69% of the total variance, with the first component explaining 43% and the second component explaining 23% of the total variance. From examining the PCA loadings, this has similar interpretation to the previous plot, as values clustered around the the bottom left have lower nutritional values. However, the second component largely reflects calcium values. Once again, we can see that dairy items serve as a good source of calcium. One of the several observations that could me made is that meat and grain products offer little vitamins and minerals. With the exception of rice and bread providing a slight amount of nutrition, the other foods are exceptionally low in these values. Some iron is present, but these foods should be eaten with macronutrient needs in consideration, not for vitamins and minerals. Cucumbers, watermelons, green beans, and peas also separate themselves as the "second tier" of nutrient rich foods. 
+The graph explains 69% of the total variance, with the first component explaining 43% and the second component explaining 23% of the total variance. From examining the PCA loadings depicted on the biplt, this has similar interpretation to the previous plot, as values clustered around the the bottom left have lower nutritional values. However, the second component largely reflects calcium values. Once again, we can see that dairy items serve as a good source of calcium as milk, cheese, cottage cheese, and yogurt all stand apart from the lower cluster. One of the several observations that could me made is that meat and grain products offer little vitamins and minerals. With the exception of rice and bread providing a slight amount of nutrition, the other foods are exceptionally low in these values. Some iron is present, but these foods should be eaten with macronutrient needs in consideration, not for vitamins and minerals. Cucumbers, watermelons, green beans, and peas also separate themselves as the "second tier" of nutrient rich foods. 
 
 Let's bring the data back together and see if there any patterns we haven't found with the entire dataset. Using a scree plot to graph the principal components versus the eigenvalues, it appears that three principal components could be reasonable from the elbow in the graph. It's important to note that these three components only account for 66% of the total variation, so they do not tell the entire story. However, because I want to maintain interpretability and the principal components are harder to understand, I don't think it'd be advantageous to examine 7 or 8 components to account for most of the variation. 
 
-**Figure 18**
-```{r pca 3 scree plot}
+**Table 6**
+```{r pca 3 }
 pca <- princomp(data.vals, cor = TRUE) # correlation matrix used, so data is on same scale
-print(pca$loadings)
 summary(pca)
+```
+**Table 7:** loadings for first three principal components.
+```{r pca 3 loadings}
+print(pca$loadings[,1:3])
 
+```
+**Figure 18**
+
+```{r pca 3 scree plot}
 eigvals <- pca$sdev^2
 k <- length(eigvals)
 plot(1:k,eigvals,type="b",xlab="Principal Components",ylab=expression(lambda[i]), main = "Scree Plot")
 ```
-**Figuer 19**
+
+**Figure 19**
+
 ```{r pc1 pc2}
 # PC1 vs PC2 with food category colored
 
@@ -582,7 +617,9 @@ text(PC1scores[gp],PC2scores[gp],labels=data$food.item[gp],col="black")
 legend("topleft", legend=levels(data$group), pch=16, col=colors)
 
 ```
+
 **Figure 20**
+
 ```{r pc1 pc3}
 # PC1 vs PC3 with food category colored
 colors <- c("blue","purple","brown","black","red","darkgreen")
@@ -605,7 +642,9 @@ text(PC1scores[gp],PC3scores[gp],labels=data$food.item[gp],col="black")
 legend("topleft", legend=levels(data$group), pch=16, col=colors)
 
 ```
+
 **Figure 21**
+
 ```{r pc2 pc3}
 # PC2 vs PC3 with food category colored
 colors <- c("blue","purple","brown","black","red","darkgreen")
@@ -640,13 +679,13 @@ We've seen from multidimensional scaling and principal component analysis that t
 Initially, I attempted k means clustering analysis by minimizing the the within-group sum of squares over the standardized variables. The scree plot did not indicate a clear choice for k, so values from 3 to 10 were tested to see if they found interesting/insightful clusters. This approach didn't produce useful results, and it was often hard to understand why certain items were being clustered together. I assume this method didn't work well because of its tendency to cluster into shapes of about equal sizes, which is not ideal for this dataset considering there is likely different variances across clusters. 
 
 To address k-means shortcomings, I turned to a model-based clustering approach. BIC was calculated on cluster values from 1 to 8 for the various models. The lowest BIC value was from the "VII" model with 6 clusters. The "VII" model is characterized as having spherical clusters of unequal volume, partly confirming why k-means wasn't satisfactory. The clusters are as displayed in print and also using multidimensional scaling. 
-
+**Table 8:** Cluster assignments
 ```{r model based clustering}
 library(mclust)
 
 mclus <- Mclust(data.scale, G = c(1:8))
 names <- data$food.item
-print(mclass <- mclus$classification)
+mclass <- mclus$classification
 
 k <- mclus$G    # number of clusters
 for(i in 1:k){
@@ -654,7 +693,9 @@ for(i in 1:k){
   print(names[mclass == i])
 }
 ```
+
 **Figure 22**
+
 ```{r cluster pca}
 
 d <- dist(data.scale) # euclidean distances between the rows
